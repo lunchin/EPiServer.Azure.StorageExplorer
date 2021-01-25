@@ -1,4 +1,4 @@
-using EPiServer.Azure.StorageExplorer.Sample.Business.Rendering;
+﻿using EPiServer.Azure.StorageExplorer.Sample.Business.Rendering;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
 {
@@ -11,6 +11,6 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
     [SiteImageUrl]
     public class ContainerPage : SitePageData, IContainerPage
     {
-
+        
     }
 }

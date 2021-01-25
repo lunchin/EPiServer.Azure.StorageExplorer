@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>EPiServer.Azure.StorageExplorer</id>
+    <version>$version$</version>
+    <title>EPiServer.Azure.StorageExplorer</title>
+    <authors>Mark Hall</authors>
+    <owners>Mark Hall</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://opensource.org/licenses/Apache-2.0</licenseUrl>
+    <projectUrl>https://github.com/lunchin/EPiServer.Azure.StorageExplorer</projectUrl>
+    <description>Provides a storage explorer for Azure blob storage</description>
+    <copyright>Copyright © $year$</copyright>
+    <tags>Azure</tags>
+    <dependencies>
+      <group targetFramework="net5.0">
+        <dependency id="EPiServer.CMS.UI.Core" version="[12.0.0-inte-016445,13)" />
+        <dependency id="EPiServer.Azure" version="[11.0.0-inte-016445,12)" />
+        <dependency id="NonFactors.Grid.Core.Mvc6" version="[6.2.3,7)" />
+      </group>
+    </dependencies>
+    <contentFiles>
+      <files include="any/any/modules/_protected/EPiServer.Azure.StorageExplorer/EPiServer.Azure.StorageExplorer.zip" buildAction="None" copyToOutput="true"  />
+    </contentFiles>
+  </metadata>
+  <files>
+    <file src="EPiServer.Azure.StorageExplorer\bin\$configuration$\net5.0\EPiServer.Azure.StorageExplorer.dll" target="lib\net5.0\" />
+    <file src="EPiServer.Azure.StorageExplorer\bin\$configuration$\net5.0\EPiServer.Azure.StorageExplorer.Views.dll" target="lib\net5.0\" />
+    <file src="Nuget\EPiServer.Azure.StorageExplorer.zip" target="contentFiles\any\any\modules\_protected\EPiServer.Azure.StorageExplorer"/>
+    <file src="EPiServer.Azure.StorageExplorer\CopyZipFiles.targets" target="build\net5.0\EPiServer.Azure.StorageExplorer\.targets" />
+  </files>
+</package>

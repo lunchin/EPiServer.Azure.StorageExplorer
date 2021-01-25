@@ -4,7 +4,6 @@ using EPiServer.Azure.StorageExplorer.Sample.Models.Blocks;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
 using EPiServer.DataAnnotations;
-using EPiServer.Azure.StorageExplorer.Sample.Models.Properties;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
 {

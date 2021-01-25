@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using EPiServer.Azure.StorageExplorer.Sample.Business.Rendering;
 using EPiServer.Web;
 using EPiServer.Core;
@@ -20,7 +20,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
 
         [Display(GroupName = Global.GroupNames.Contact)]
         public virtual string Phone { get; set; }
-
+        
         [Display(GroupName = Global.GroupNames.Contact)]
         [EmailAddress]
         public virtual string Email { get; set; }

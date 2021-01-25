@@ -1,14 +1,14 @@
-using System.Web.Mvc;
-using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
+﻿using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
 using EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels;
 using EPiServer.Web;
 using EPiServer.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Controllers
 {
     public class StartPageController : PageControllerBase<StartPage>
     {
-        public ActionResult Index(StartPage currentPage)
+        public IActionResult Index(StartPage currentPage)
         {
             var model = PageViewModel.Create(currentPage);
 

@@ -1,16 +1,17 @@
+using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
+using EPiServer.Core;
+using EPiServer.Filters;
+using EPiServer.ServiceLocation;
+using EPiServer.Shell.Configuration;
+using EPiServer.Web;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.Filters;
-using EPiServer.Shell.Configuration;
-using EPiServer.Web;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Business
 {
+    [ServiceConfiguration(Lifecycle = ServiceInstanceScope.Singleton)]
     public class ContentLocator
     {
         private readonly IContentLoader _contentLoader;
@@ -67,7 +68,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Business
         private IEnumerable<PageData> FindPagesByPageTypeRecursively(PageReference pageLink, int pageTypeId)
         {
             var criteria = new PropertyCriteriaCollection
-                                {
+                               {
                                     new PropertyCriteria
                                     {
                                         Name = "PageTypeID",
@@ -75,7 +76,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Business
                                         Condition = CompareCondition.Equal,
                                         Value = pageTypeId.ToString(CultureInfo.InvariantCulture)
                                     }
-                                };
+                               };
 
             // Include content providers serving content beneath the page link specified for the search
             if (_providerManager.ProviderMap.CustomProvidersExist)

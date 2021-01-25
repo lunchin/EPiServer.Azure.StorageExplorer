@@ -1,4 +1,4 @@
-namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
+﻿namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
 {
     /// <summary>
     /// Marker interface for search implementation

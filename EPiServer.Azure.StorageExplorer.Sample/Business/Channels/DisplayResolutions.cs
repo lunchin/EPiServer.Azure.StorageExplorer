@@ -1,4 +1,4 @@
-namespace EPiServer.Azure.StorageExplorer.Sample.Business.Channels
+﻿namespace EPiServer.Azure.StorageExplorer.Sample.Business.Channels
 {
     /// <summary>
     /// Defines resolution for desktop displays

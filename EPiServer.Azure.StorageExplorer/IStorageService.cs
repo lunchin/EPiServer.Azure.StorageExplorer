@@ -1,7 +1,8 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
-using System;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace EPiServer.Azure.StorageExplorer
 {
@@ -9,18 +10,18 @@ namespace EPiServer.Azure.StorageExplorer
     {
         string BlobRootUrl { get; }
         bool IsInitialized { get; }
-        List<IListBlobItem> GetBlobItems(string containerName, string path, int index, int length);
-        List<CloudBlobDirectory> GetBlobDirectories(string containerName, string path = null);
-        CloudBlobDirectory GetBlobDirectory(string containerName, string path);
-        CloudBlobContainer GetContainer(string containerName, 
-            BlobContainerPublicAccessType blobContainerPublicAccessType = BlobContainerPublicAccessType.Off);
-        List<CloudBlobContainer> GetContainers();
-        CloudBlockBlob GetCloudBlockBlob(string containerName, string path);
-        CloudBlockBlob GetCloudBlockBlob(string url);
-        CloudBlockBlob Add(string containerName, string filename, Stream stream, long length);
-        void Delete(string containerName, string path);
-        void Delete(string url);
-        void Rename(CloudBlockBlob blob, string newName);
-        bool Exists(string containerName, string path);
+        IAsyncEnumerable<BlobHierarchyItem> GetBlobItemsAsync(string containerName, string path);
+        IAsyncEnumerable<BlobHierarchyItem> GetBlobDirectoriesAsync(string containerName, string path = null);
+        Task<BlobHierarchyItem> GetBlobDirectoryAsync(string containerName, string path);
+        Task<BlobContainerClient> GetContainerAsync(string containerName,
+            PublicAccessType blobContainerPublicAccessType = PublicAccessType.None);
+        IAsyncEnumerable<BlobContainerClient> GetContainersAsync();
+        Task<BlobClient> GetCloudBlockBlobAsync(string containerName, string path);
+        Task<BlobClient> GetCloudBlockBlobAsync(string url);
+        Task<BlobClient> AddAsync(string containerName, string filename, Stream stream, long length);
+        Task DeleteAsync(string containerName, string path);
+        Task DeleteAsync(string url);
+        Task RenameAsync(BlobClient blob, string newName);
+        Task<bool> ExistsAsync(string containerName, string path);
     }
 }

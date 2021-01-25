@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using EPiServer.Core;
 using EPiServer.Shell.ObjectEditing;
@@ -15,9 +15,9 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Business.EditorDescriptors
         public override void ModifyMetadata(ExtendedMetadata metadata, IEnumerable<Attribute> attributes)
         {
             SelectionFactoryType = typeof(ContactPageSelectionFactory);
-
+            
             ClientEditingClass = "epi-cms/contentediting/editors/SelectionEditor";
-
+  
             base.ModifyMetadata(metadata, attributes);
         }
     }

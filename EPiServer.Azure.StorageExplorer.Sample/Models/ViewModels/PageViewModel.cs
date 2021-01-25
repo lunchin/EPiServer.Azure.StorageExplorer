@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using EPiServer.Core;
 using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
 

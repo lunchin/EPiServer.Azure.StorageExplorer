@@ -1,94 +1,48 @@
-﻿﻿using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EPiServer.Azure.StorageExplorer
 {
     public static class StorageExtensions
     {
-        public static async Task<List<IListBlobItem>> GetItems(this CloudBlobDirectory directory, int maxResults = 100)
+        public static AzureBlob GetAzureBlob(this BlobContainerClient item)
         {
-            var blobContinuationToken = new BlobContinuationToken();
-            var blobRequestOptions = new BlobRequestOptions();
-            var operationContext = new OperationContext();
-            var results = new List<IListBlobItem>();
-            do
-            {
-                var result = await directory.ListBlobsSegmentedAsync(false, BlobListingDetails.Metadata, maxResults, blobContinuationToken, blobRequestOptions, operationContext);
-                blobContinuationToken = result.ContinuationToken;
-                results.AddRange(result.Results);
-            }
-            while (blobContinuationToken != null);
-            return results;
-        }
-
-        public static async Task<List<IListBlobItem>> GetItems(this CloudBlobContainer container, string prefix, int maxResults = 100)
-        {
-            var blobContinuationToken = new BlobContinuationToken();
-            var blobRequestOptions = new BlobRequestOptions();
-            var operationContext = new OperationContext();
-            var results = new List<IListBlobItem>();
-            do
-            {
-                var result = await container.ListBlobsSegmentedAsync(prefix, false, BlobListingDetails.Metadata, maxResults, blobContinuationToken, blobRequestOptions, operationContext);
-                blobContinuationToken = result.ContinuationToken;
-                results.AddRange(result.Results);
-            }
-            while (blobContinuationToken != null);
-            return results;
-        }
-
-        public static List<CloudBlobDirectory> GetBlobDirectories(this List<IListBlobItem> items)
-        {
-            return items.OfType<CloudBlobDirectory>().ToList();
-        }
-
-        public static List<CloudBlockBlob> GetBlobs(this List<IListBlobItem> items)
-        {
-            return items.OfType<CloudBlockBlob>().ToList();
-        }
-
-        public static AzureBlob GetAzureBlob(this CloudBlobContainer item)
-        {
+            var properties = item.GetProperties().Value;
             return new AzureBlob
             {
                 Name = item.Name,
                 IsContainer = true,
-                LastModified = item?.Properties.LastModified?.UtcDateTime ?? DateTime.UtcNow,
-                Etag = item?.Properties.ETag
+                LastModified = properties?.LastModified.UtcDateTime ?? DateTime.UtcNow,
+                Etag = properties?.ETag.ToString()
             };
         }
 
-        public static AzureBlob GetAzureBlob(this IListBlobItem item)
+        public static AzureBlob GetAzureBlob(this BlobHierarchyItem item, BlobContainerClient container)
         {
-            var directory = item as CloudBlobDirectory;
-            if (directory != null)
+            
+            if (item.IsPrefix)
             {
                 return new AzureBlob
                 {
-                    Name = directory.Prefix,
+                    Name = item.Prefix,
                     IsDirectory = true,
-                    Url = directory.Uri.ToString()
-                };
+                    Url =  container.Uri + "/" + item.Prefix                };
             }
 
-            var blob = item as CloudBlockBlob;
-            if (blob != null)
+            if (item.Blob != null)
             {
                 return new AzureBlob
                 {
-                    Name = blob.Name.Substring(blob.Name.LastIndexOf('/') == 0 ? 0 : blob.Name.LastIndexOf('/') + 1),
+                    Name = item.Blob.Name.Substring(item.Blob.Name.LastIndexOf('/') == 0 ? 0 : item.Blob.Name.LastIndexOf('/') + 1),
                     IsBlob = true,
-                    LastModified = blob.Properties?.LastModified?.UtcDateTime ?? DateTime.UtcNow,
-                    Etag = blob.Properties?.ETag,
-                    BlobType = blob.Properties?.BlobType.ToString(),
-                    ContentType = blob.Properties?.ContentType,
-                    Size = blob.Properties?.Length ?? 0,
-                    Status = blob.Properties?.LeaseStatus.ToString(),
-                    Url = blob.Uri.ToString()
+                    LastModified = item.Blob.Properties?.LastModified?.UtcDateTime ?? DateTime.UtcNow,
+                    Etag = item.Blob.Properties?.ETag?.ToString(),
+                    BlobType = item.Blob.Properties?.BlobType.ToString(),
+                    ContentType = item.Blob.Properties?.ContentType,
+                    Size = item.Blob.Properties?.ContentLength ?? 0,
+                    Status = item.Blob.Properties?.LeaseStatus.ToString(),
+                    Url = container.GetBlobClient(item.Blob.Name).Uri.ToString()
                 };
             }
             return null;

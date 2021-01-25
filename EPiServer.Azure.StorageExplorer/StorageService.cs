@@ -1,26 +1,25 @@
-﻿using EPiServer.ServiceLocation;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using EPiServer.Azure.Blobs;
+using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Web;
+using System.Threading.Tasks;
 
 namespace EPiServer.Azure.StorageExplorer
 {
-    [ServiceConfiguration(ServiceType = typeof(IStorageService), Lifecycle = ServiceInstanceScope.Singleton)]
     public class StorageService : IStorageService
     {
-        private readonly StorageCredentials _storageCredentials;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly AzureBlobProviderOptions _azureBlobProviderOptions;
 
-        public StorageService()
+        public StorageService(IOptions<AzureBlobProviderOptions> options)
         {
-            if (CloudStorageAccount.TryParse(ConfigurationManager.ConnectionStrings["EPiServerAzureBlobs"].ConnectionString, out var account))
+            if (options.Value != null && !string.IsNullOrEmpty(options.Value.ConnectionString))
             {
-                _storageCredentials = account.Credentials;
-                BlobRootUrl = VirtualPathUtility.AppendTrailingSlash(account.BlobStorageUri.PrimaryUri.ToString());
+                _blobServiceClient = new BlobServiceClient(options.Value.ConnectionString);
+                _azureBlobProviderOptions = options.Value;
                 IsInitialized = true;
             }
         }
@@ -29,14 +28,14 @@ namespace EPiServer.Azure.StorageExplorer
 
         public bool IsInitialized { get; }
 
-        public CloudBlockBlob Add(string containerName, string filename, Stream stream, long length)
+        public async Task<BlobClient> AddAsync(string containerName, string filename, Stream stream, long length)
         {
-            var blob = GetCloudBlockBlob(containerName, filename);
+            var blob = await GetCloudBlockBlobAsync(containerName, filename);
             bool shouldUpload = true;
             if (blob.Exists())
             {
-                blob.FetchAttributes();
-                if (blob.Properties.Length == length)
+                var properties = blob.GetProperties();
+                if (properties.Value?.ContentLength == length)
                 {
                     shouldUpload = false;
                 }
@@ -44,118 +43,110 @@ namespace EPiServer.Azure.StorageExplorer
 
             if (shouldUpload)
             {
-                blob.UploadFromStream(stream);
+                blob.Upload(stream);
             }
 
             return blob;
         }
 
-        public List<IListBlobItem> GetBlobItems(string containerName, string path, int index, int length)
+        public async IAsyncEnumerable<BlobHierarchyItem> GetBlobItemsAsync(string containerName, string path)
         {
-            var container = GetContainer(containerName);
-            var blobRequestOptions = new BlobRequestOptions();
-            var operationContext = new OperationContext();
-
-            return container.ListBlobs(path, false, BlobListingDetails.Metadata, blobRequestOptions, operationContext)
-                .Skip(index)
-                .Take(length)
-                .ToList();
+            var container = await GetContainerAsync(containerName);
+            await foreach(var item in container.GetBlobsByHierarchyAsync(prefix:path, delimiter:"/"))
+            {
+                yield return item;
+            }
         }
 
-        public CloudBlockBlob GetCloudBlockBlob(string containerName, string path)
+        public async Task<BlobClient> GetCloudBlockBlobAsync(string containerName, string path)
         {
-            var container = GetContainer(containerName);
-            return container.GetBlockBlobReference(path);
+            var container = await GetContainerAsync(containerName);
+            return container.GetBlobClient(path);
         }
 
-        public bool Exists(string containerName, string path)
+        public async Task<bool> ExistsAsync(string containerName, string path)
         {
-            var reference = GetCloudBlockBlob(containerName, path);
+            var reference = await GetCloudBlockBlobAsync(containerName, path);
             return reference.Exists();
         }
 
-        public void Delete(string containerName, string path)
+        public async Task DeleteAsync(string containerName, string path)
         {
-            var reference = GetCloudBlockBlob(containerName, path);
+            var reference = await GetCloudBlockBlobAsync(containerName, path);
             reference.DeleteIfExists();
         }
 
-        public void Delete(string url)
+        public async Task DeleteAsync(string url)
         {
-            var storageAccount = new CloudStorageAccount(_storageCredentials, true);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            blobClient.GetBlobReferenceFromServer(new System.Uri(url))?.DeleteIfExists();
+            var blobClient = new BlobClient(new Uri(url));
+            await blobClient?.DeleteIfExistsAsync();
         }
 
-        public List<CloudBlobDirectory> GetBlobDirectories(string containerName, string path = null)
+        public async IAsyncEnumerable<BlobHierarchyItem> GetBlobDirectoriesAsync(string containerName, string path = null)
         {
-            var container = GetContainer(containerName);
-            var directory = container.GetDirectoryReference(path);
-            if (directory == null)
+            var container = await GetContainerAsync(containerName);
+            await foreach(var dir in container.GetBlobsByHierarchyAsync(prefix:path, delimiter:"/"))
             {
-                return new List<CloudBlobDirectory>();
+                if (dir.IsPrefix)
+                {
+                    yield return dir;
+                }
             }
-            return GetFolders(containerName, directory);
         }
 
-        public CloudBlobDirectory GetBlobDirectory(string containerName, string path)
+        public async Task<BlobHierarchyItem> GetBlobDirectoryAsync(string containerName, string path)
         {
-            var container = GetContainer(containerName);
-            return container.GetDirectoryReference(path);
+            var container = await GetContainerAsync(containerName);
+            BlobHierarchyItem returnItem;
+            await foreach(var item in container.GetBlobsByHierarchyAsync(delimiter: "/", prefix: path))
+            {
+                if (item.IsPrefix)
+                {
+                    returnItem = item;
+                }
+                break;
+            }
+            
+            return null;
         }
 
-        public CloudBlobContainer GetContainer(string containerName, 
-            BlobContainerPublicAccessType blobContainerPublicAccessType = BlobContainerPublicAccessType.Off)
+        public async Task<BlobContainerClient> GetContainerAsync(string containerName, 
+            PublicAccessType blobContainerPublicAccessType = PublicAccessType.None)
         {
-            var storageAccount = new CloudStorageAccount(_storageCredentials, true);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var blobContainer = blobClient.GetContainerReference(containerName);
-            blobContainer.CreateIfNotExists(blobContainerPublicAccessType);
-            return blobContainer;
+            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            await blobContainerClient.CreateIfNotExistsAsync(blobContainerPublicAccessType);
+            return blobContainerClient;
         }
 
-        public void Rename(CloudBlockBlob blob, string newName)
+        public async Task RenameAsync(BlobClient blob, string newName)
         {
             if (blob == null)
             {
                 return;
             }
 
-            var blobCopy = blob.Container.GetBlockBlobReference(newName);
-
-            if (blobCopy == null || blobCopy.Exists() || !blob.Exists())
+            var blobCopy = new BlobClient(_azureBlobProviderOptions.ConnectionString, blob.BlobContainerName, newName);
+            if (blobCopy == null || await blobCopy.ExistsAsync() || !await blob.ExistsAsync())
             {
                 return;
             }
-            blobCopy.StartCopy(blob);
-            blob.DeleteIfExists();
+
+            await blobCopy.StartCopyFromUriAsync(blob.Uri);
+            await blob.DeleteIfExistsAsync();
         }
 
-        public List<CloudBlobContainer> GetContainers()
+        public async IAsyncEnumerable<BlobContainerClient> GetContainersAsync()
         {
-            var storageAccount = new CloudStorageAccount(_storageCredentials, true);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            return blobClient.ListContainers().ToList();
-        }
-
-
-        public CloudBlockBlob GetCloudBlockBlob(string url)
-        {
-            var storageAccount = new CloudStorageAccount(_storageCredentials, true);
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            return blobClient.GetBlobReferenceFromServer(new System.Uri(url)) as CloudBlockBlob;
-        }
-
-        private List<CloudBlobDirectory> GetFolders(string containerName, CloudBlobDirectory blobDirectory = null)
-        {
-            if (blobDirectory == null)
+            await foreach (var container in _blobServiceClient.GetBlobContainersAsync())
             {
-                var container = GetContainer(containerName);
-                var items = container.GetItems(string.Empty).Result;
-                return items.OfType<CloudBlobDirectory>().ToList();
+                yield return _blobServiceClient.GetBlobContainerClient(container.Name);
             }
-            var children = blobDirectory.GetItems().Result;
-            return children.OfType<CloudBlobDirectory>().ToList();
         }
+
+        public async Task<BlobClient> GetCloudBlockBlobAsync(string url)
+        {
+            return await Task.FromResult(new BlobClient(new Uri(url)));
+        }
+
     }
 }

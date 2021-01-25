@@ -1,16 +1,16 @@
 ﻿/*!
- * Mvc.Grid 6.0.2
- * https://github.com/NonFactors/MVC5.Grid
+ * Mvc.Grid 6.2.3
+ * https://github.com/NonFactors/AspNetCore.Grid
  *
  * Copyright © NonFactors
  *
  * Licensed under the terms of the MIT License
- * http://www.opensource.org/licenses/mit-license.php
+ * https://www.opensource.org/licenses/mit-license.php
  */
 
 @font-face {
-    font-family: 'GridGlyphs';
-    src: url('../Fonts/GridGlyphs.woff') format('woff');
+    src: url("../fonts/grid-glyphs.woff") format("woff");
+    font-family: GridGlyphs;
 }
 
 .mvc-grid {
@@ -20,41 +20,28 @@
     font-size: 1rem;
 }
 
-.mvc-grid table {
+.mvc-grid > table {
     border-collapse: collapse;
     max-width: 100%;
     width: 100%;
 }
 
-.mvc-grid th {
+.mvc-grid > table > thead > tr > th {
     background-clip: padding-box;
     background-color: #f7f7f7;
     position: relative;
 }
 
-.mvc-grid th,
-.mvc-grid td {
+.mvc-grid > table > thead > tr > th,
+.mvc-grid > table > tbody > tr > td,
+.mvc-grid > table > tfoot > tr > td {
     border: 1px solid #dee2e6;
     padding: 0.75em;
 }
 
-.mvc-grid .filterable {
-    padding-right: 3.5em;
-}
-
-.mvc-grid .sortable,
-.mvc-grid .mvc-grid-filter {
+.mvc-grid .sortable {
+    padding-right: 2.75em;
     cursor: pointer;
-}
-
-.mvc-grid .asc::after {
-    padding-left: 3px;
-    content: '\2193';
-}
-
-.mvc-grid .desc::after {
-    padding-left: 3px;
-    content: '\2191';
 }
 
 .mvc-grid-hidden,
@@ -62,12 +49,19 @@
     display: none;
 }
 
+.mvc-grid-title {
+    display: inline-block;
+}
+
+.mvc-grid-sort,
 .mvc-grid-filter {
     background-color: rgba(0, 0, 0, 0.03);
     transition: background-color 0.5s;
-    font-family: 'GridGlyphs';
+    font-family: GridGlyphs;
+    font-size: inherit;
     position: absolute;
     font-weight: bold;
+    cursor: pointer;
     width: 2.75em;
     border: none;
     height: 100%;
@@ -82,11 +76,46 @@
 }
 
 .mvc-grid-filter::before {
-    content: '\0041';
+    content: "\0041";
 }
 
 .mvc-grid-filter.applied::before {
-    content: '\0042';
+    content: "\0042";
+}
+
+.mvc-grid-sort {
+    background: transparent;
+    font-weight: normal;
+    transition: none;
+}
+
+.mvc-grid-sort::after {
+    font-size: 0.9em;
+    content: "\0044";
+    opacity: 0.15;
+}
+
+.mvc-grid-sort::before {
+    margin-right: -0.5em;
+    font-size: 0.9em;
+    content: "\0043";
+    opacity: 0.15;
+}
+
+.mvc-grid-sort span {
+    position: absolute;
+    font-weight: bold;
+    text-align: left;
+    font-size: 0.7em;
+    color: #adacac;
+    width: 33%;
+    right: 0;
+    top: 40%;
+}
+
+.mvc-grid .desc .mvc-grid-sort::after,
+.mvc-grid .asc .mvc-grid-sort::before {
+    opacity: 0.5;
 }
 
 .mvc-grid-row-filters .filterable {
@@ -98,15 +127,18 @@
 }
 
 .mvc-grid-row-filters .mvc-grid-value {
-    border: 0.5px solid #aaaaaa;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    text-overflow: ellipsis;
     margin-right: 0.25em;
-    padding: 0 0.2em;
-    font: inherit;
+    font-size: inherit;
+    font-weight: bold;
+    padding: 0 0.5em;
     flex: 1;
 }
 
-.mvc-grid-row-filters input.mvc-grid-value {
-    padding: 0 0.5em;
+.mvc-grid-row-filters select.mvc-grid-value {
+    padding: 0 0.2em;
 }
 
 .mvc-grid-row-filters .mvc-grid-value.invalid {
@@ -117,41 +149,57 @@
     color: #bbbbbb;
 }
 
-.mvc-grid-row-filters .mvc-grid-value:-ms-input-placeholder {
+.mvc-grid-row-filters .mvc-grid-value::-ms-input-placeholder {
     color: #bbbbbb;
 }
 
 .mvc-grid-row-filters .mvc-grid-filter {
-    border: 0.5px solid #aaaaaa;
-    flex: 0 0 2.125em;
+    border: 1px solid #cccccc;
     position: static;
-    height: 2.125em;
+    height: 2.25em;
+    width: 2.25em;
 }
 
-.mvc-grid-row-filters [readonly] {
-    background-color: #e4e4e4;
+.mvc-grid-excel-mode .filterable {
+    padding-right: 3.5em;
 }
 
-.mvc-grid-row-filters.mvc-grid-headers .filterable {
-    padding: 0;
+.mvc-grid-excel-mode .sortable.filterable {
+    padding-right: 5.5em;
 }
 
-.mvc-grid-row-filters.mvc-grid-headers .mvc-grid-value {
-    padding: 0.75em 3.5em 0.75em 0.75em;
+.mvc-grid-excel-mode .filterable .mvc-grid-sort,
+.mvc-grid-header-mode .filterable .mvc-grid-sort {
+    right: 2.75em;
+}
+
+.mvc-grid-header-mode .filterable {
+    padding: 0 2.75em 0 0;
+}
+
+.mvc-grid-header-mode .mvc-grid-value {
     background-color: #f7f7f7;
+    padding: 0.75em;
+    font: inherit;
     border: none;
     margin: 0;
 }
 
-.mvc-grid-row-filters.mvc-grid-headers .mvc-grid-filter {
+.mvc-grid-header-mode .mvc-grid-filter {
     position: absolute;
+    width: 2.75em;
     border: none;
     height: 100%;
+}
+
+.mvc-grid-header-mode .sortable .mvc-grid-value {
+    padding-right: 2.5em;
 }
 
 .mvc-grid-popup {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
     background-clip: padding-box;
+    max-width: calc(100% - 2em);
     background-color: #ffffff;
     border: 1px solid #cccccc;
     border-radius: 4px;
@@ -159,6 +207,7 @@
     min-width: 12em;
     font-size: 1rem;
     z-index: 1100;
+    margin: 1em;
 }
 
 .mvc-grid-popup.mvc-grid-guid-filter {
@@ -207,6 +256,7 @@
 .mvc-grid-popup .mvc-grid-method,
 .mvc-grid-popup .mvc-grid-operator {
     border: 1px solid #cccccc;
+    background-color: #ffffff;
     box-sizing: border-box;
     font-size: 0.9em;
     padding: 0 0.2em;
@@ -214,11 +264,17 @@
     width: 100%;
 }
 
+.mvc-grid-popup .mvc-grid-value[multiple] {
+    overflow-y: auto;
+    height: 8em;
+}
+
 .mvc-grid-popup .mvc-grid-operator {
     width: auto;
 }
 
 .mvc-grid-popup input.mvc-grid-value {
+    text-overflow: ellipsis;
     padding: 0 0.5em;
 }
 
@@ -240,6 +296,7 @@
     background-color: #28a745;
     border-color: #28a745;
     margin-right: 0.3em;
+    font-weight: bold;
 }
 
 .mvc-grid-popup .mvc-grid-apply:focus {
@@ -254,6 +311,42 @@
 
 .mvc-grid-popup .mvc-grid-cancel:focus {
     box-shadow: 0 0 0 0.2em rgba(220, 53, 69, 0.5);
+}
+
+.mvc-grid-popup .mvc-grid-column {
+    box-sizing: border-box;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5em;
+    display: flex;
+    width: 100%;
+    margin: 0;
+}
+
+.mvc-grid-popup .mvc-grid-column span {
+    padding: 0 0.5em;
+}
+
+.mvc-grid-popup .mvc-grid-dropzone:first-child {
+    padding-top: 0.5em;
+}
+
+.mvc-grid-popup .mvc-grid-dropzone:last-child {
+    padding-bottom: 0.5em;
+}
+
+.mvc-grid-popup .mvc-grid-dragging .mvc-grid-column {
+    padding: 0 0.5em;
+}
+
+.mvc-grid-popup .mvc-grid-dragging .mvc-grid-dropzone {
+    background-color: #c4daff;
+    padding: 0.5em;
+    opacity: 0.4;
+}
+
+.mvc-grid-popup .mvc-grid-dragging .mvc-grid-dropzone.hover {
+    background-color: #5a90ea;
 }
 
 .mvc-grid-pager,
@@ -287,13 +380,12 @@
     color: #ffffff;
 }
 
-.mvc-grid-pager .disabled,
-.mvc-grid-pager .disabled:focus,
-.mvc-grid-pager .disabled:hover {
+.mvc-grid-pager [disabled],
+.mvc-grid-pager [disabled]:hover {
     background-color: #efefef;
     cursor: not-allowed;
     color: #777777;
-    outline: none;
+    outline: 0;
 }
 
 .mvc-grid-page-sizes {
@@ -303,7 +395,7 @@
 
 .mvc-grid-page-sizes select {
     border: 1px solid #dddddd;
-    padding: 0.5em 0;
+    padding: 0.5em;
     font: inherit;
 }
 
@@ -355,11 +447,13 @@
 }
 
 @keyframes loader-points {
-    0%, 80%, 100% {
+    0%,
+    80%,
+    100% {
         transform: scale(0);
     }
 
     40% {
-        transform: scale(1.0);
+        transform: scale(1);
     }
 }

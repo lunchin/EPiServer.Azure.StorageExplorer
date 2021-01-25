@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using EPiServer.Core;
 using EPiServer.Filters;
@@ -14,7 +14,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Business
     public static class ContentExtensions
     {
         /// <summary>
-        /// Filters content which should not be visible to the user.
+        /// Filters content which should not be visible to the user. 
         /// </summary>
         public static IEnumerable<T> FilterForDisplay<T>(this IEnumerable<T> contents, bool requirePageTemplate = false, bool requireVisibleInMenu = false)
             where T : IContent
@@ -25,7 +25,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Business
             if (requirePageTemplate)
             {
                 var templateFilter = ServiceLocator.Current.GetInstance<FilterTemplate>();
-                templateFilter.TemplateTypeCategories = TemplateTypeCategories.Page;
+                templateFilter.TemplateTypeCategories = TemplateTypeCategories.Request;
                 contents = contents.Where(x => !templateFilter.ShouldFilter(x));
             }
             if (requireVisibleInMenu)

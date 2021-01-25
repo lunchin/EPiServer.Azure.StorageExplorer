@@ -1,4 +1,4 @@
-namespace EPiServer.Azure.StorageExplorer.Sample.Business.Rendering
+﻿namespace EPiServer.Azure.StorageExplorer.Sample.Business.Rendering
 {
     /// <summary>
     /// Marker interface for content types which should not be handled by DefaultPageController.

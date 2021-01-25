@@ -1,20 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-<PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <Version>1.0.1.0</Version>
+    <VersionPrefix>2.0.0.0</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <NuspecFile>EPiServer.Azure.StorageExplorer.nuspec</NuspecFile>
+    <NuspecBasePath>$(ProjectDir)..\</NuspecBasePath>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Product>Episerver Storage Explorer</Product>
+    <Description>Episerver Storage Explorer</Description>
+    <Company>Episerver</Company>
+    <Authors>Episerver</Authors>
+    <Copyright>© 2003-2021 by Episerver AB. All rights reserved</Copyright>
+    <PackageVersion>$(VersionPrefix)$(VersionSuffix)</PackageVersion>
+    <NuspecProperties>Configuration=$(Configuration);version=$(PackageVersion)</NuspecProperties>
   </PropertyGroup>
-<ItemGroup>
-  <None Remove="lang\StroageExplorer_en.xml" />
-</ItemGroup>
-<ItemGroup>
-  <EmbeddedResource Include="lang\StroageExplorer_en.xml" />
-</ItemGroup>
-<ItemGroup>
-  <PackageReference Include="EPiServer.Azure" Version="9.4.0" />
-  <PackageReference Include="EPiServer.CMS.UI.Core" Version="11.1.0" />
-  <PackageReference Include="NonFactors.Grid.Core.Mvc5" Version="6.0.2" />
-</ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="lang\StroageExplorer_en.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EPiServer.Azure" Version="11.0.0-inte-016445" />
+    <PackageReference Include="EPiServer.CMS.UI.Core" Version="12.0.0-inte-016445" />
+    <PackageReference Include="NonFactors.Grid.Core.Mvc6" Version="6.2.3" />
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(ProjectDir)clientResources&quot; &quot;$(SolutionDir)EPiServer.Azure.StorageExplorer.Sample\modules\_protected\EPiServer.Azure.StorageExplorer\clientResources&quot; /Y /I /E" />
+  </Target>
 </Project>

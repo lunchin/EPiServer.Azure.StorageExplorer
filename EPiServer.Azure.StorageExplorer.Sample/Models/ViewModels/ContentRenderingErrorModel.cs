@@ -1,6 +1,5 @@
+﻿using EPiServer.Core;
 using System;
-using EPiServer;
-using EPiServer.Core;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels
 {

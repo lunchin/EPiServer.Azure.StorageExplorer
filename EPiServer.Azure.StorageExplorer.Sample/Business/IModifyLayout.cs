@@ -1,4 +1,4 @@
-using EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels;
+﻿using EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Business
 {

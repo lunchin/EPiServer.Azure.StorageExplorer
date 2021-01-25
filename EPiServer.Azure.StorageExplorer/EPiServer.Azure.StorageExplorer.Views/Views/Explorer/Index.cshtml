@@ -1,0 +1,129 @@
+﻿@using NonFactors.Mvc.Grid
+@using EPiServer.Azure.StorageExplorer
+@using EPiServer.Shell.Navigation
+
+ @model EPiServer.Azure.StorageExplorer.ExplorerModel
+
+@if (Model.BreadCrumbs.Any())
+{
+    <ul class="breadcrumb">
+        @foreach (var breadcrumb in Model.BreadCrumbs)
+        {
+            <li>
+                @if (!string.IsNullOrEmpty(breadcrumb.Value))
+                {
+                    <a href="@breadcrumb.Value">@breadcrumb.Key</a>
+                }
+                else
+                {
+                    @breadcrumb.Key
+                }
+            </li>
+        }
+    </ul>
+}
+
+@if (string.IsNullOrEmpty(Model.Container) && string.IsNullOrEmpty(Model.Path))
+{
+    <div class="container-fluid">
+        <div class="explorer-form">
+            @using (Html.BeginForm("CreateContainer", "Explorer", FormMethod.Post))
+            {
+                <div class="form-group">
+                    <label for="conatiner">@Html.Translate("/storageexplorer/newcontainer")</label>
+                    @Html.TextBox("container", null, new { @class = "form-control" })
+                </div>
+                <button type="submit" class="btn btn-primary">@Html.Translate("/storageexplorer/submit")</button>
+
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid">
+        <div class="explorer-form">
+            @using (Html.BeginForm("UploadFiles", "Explorer", new { Model.Path, Model.Container }, Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Post, true, new { enctype = "multipart/form-data" }))
+            {
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="postedFiles" name="postedFiles" multiple="multiple" />
+                    <label class="custom-file-label" for="customFile">@Html.Translate("/storageexplorer/choosefile")</label>
+                </div>
+                <button type="submit" class="btn btn-primary">@Html.Translate("/storageexplorer/submit")</button>
+
+            }
+        </div>
+    </div>
+}
+<div>
+    @(Html
+        .Grid("_Grid", Model.Results)
+        .Build(columns =>
+        {
+
+            columns.Add(model => model.Name).Titled("Name").RenderedAs(model =>
+            {
+                if (model.IsContainer)
+                {
+                    return Html.ActionLink(model.Name, "Index", "Explorer", new
+                    {
+                        container = model.Name
+                    }, null);
+                }
+                else if (model.IsDirectory)
+                {
+                    return Html.ActionLink(model.Name, "Index", "Explorer", new
+                    {
+                        container = Model.Container,
+                        path = model.Name
+                    }, null);
+                }
+                else
+                {
+                    return Html.ActionLink(model.Name, "Download", "Explorer", new
+                    {
+                        url = model.Url
+                    }, null);
+                }
+
+            });
+            columns.Add(model => model.LastModified).Titled("Modified");
+            columns.Add(model => model.SizeString).Titled("Size");
+            columns.Add(model => model.ContentType).Titled("Content Type");
+            columns.Add(model => model.BlobType).Titled("Blob Type");
+            columns.Add(model => model.Status).Titled("Status");
+            columns.Add(model => model.Etag).Titled("Etag");
+            columns.Add().Titled("Actions").RenderedAs(model =>
+            {
+                if (model.IsContainer)
+                {
+                    return Html.ActionLink("Delete", "Delete", "Explorer", new
+                    {
+                        container = model.Name,
+                        url = model.Url
+                    }, null);
+                }
+                else if (model.IsDirectory)
+                {
+                    return Html.ActionLink("Delete", "Delete", "Explorer", new
+                    {
+                        container = Model.Container,
+                        path = model.Name,
+                        url = model.Url
+                    }, null);
+                }
+                else
+                {
+                    return Html.ActionLink("Delete", "Delete", "Explorer", new
+                    {
+                        url = model.Url
+                    }, null);
+                }
+            }).Encoded(false);
+        })
+        .Css("css-classes")
+        .AppendCss("table-hover")
+        .Filterable()
+        .Sortable()
+    )
+</div>

@@ -1,4 +1,4 @@
-namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
+﻿namespace EPiServer.Azure.StorageExplorer.Sample.Models.Pages
 {
     /// <summary>
     /// Used primarily for publishing news articles on the website

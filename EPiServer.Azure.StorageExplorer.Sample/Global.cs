@@ -1,4 +1,4 @@
-using EPiServer.DataAnnotations;
+﻿using EPiServer.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -80,8 +80,9 @@ namespace EPiServer.Azure.StorageExplorer.Sample
         }
 
         /// <summary>
-        /// Virtual path to folder with static graphics, such as "~/Static/gfx/"
+        /// Virtual path to folder with static graphics, such as "/gfx/"
         /// </summary>
-        public const string StaticGraphicsFolderPath = "~/Static/gfx/";
+        public const string StaticGraphicsFolderPath = "/gfx/";
     }
 }
+

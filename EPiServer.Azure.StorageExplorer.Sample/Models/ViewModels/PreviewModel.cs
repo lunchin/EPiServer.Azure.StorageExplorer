@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using EPiServer.Core;
 using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
 
@@ -14,7 +14,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels
         }
 
         public IContent PreviewContent { get; set; }
-        public List<PreviewArea> Areas { get; set; }
+        public List<PreviewArea> Areas { get; set; } 
 
         public class PreviewArea
         {

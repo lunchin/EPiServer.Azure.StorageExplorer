@@ -1,17 +1,18 @@
+using EPiServer.Azure.StorageExplorer.Sample.Business;
+using EPiServer.Core;
+using EPiServer.ServiceLocation;
+using EPiServer.Web.Mvc.Html;
+using EPiServer.Web.Routing;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Web;
-using System.Web.Mvc;
-using System.Web.WebPages;
-using EPiServer.Core;
-using EPiServer.ServiceLocation;
-using EPiServer.Azure.StorageExplorer.Sample.Business;
-using EPiServer.Web.Mvc.Html;
-using EPiServer.Web.Routing;
-using EPiServer;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
 {
@@ -29,21 +30,21 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
         /// <remarks>
         /// Filter by access rights and publication status.
         /// </remarks>
-        public static IHtmlString MenuList(
-            this HtmlHelper helper,
-            ContentReference rootLink,
-            Func<MenuItem, HelperResult> itemTemplate = null,
-            bool includeRoot = false,
-            bool requireVisibleInMenu = true,
+        public static IHtmlContent MenuList(
+            this IHtmlHelper helper, 
+            ContentReference rootLink, 
+            Func<MenuItem, HelperResult> itemTemplate = null, 
+            bool includeRoot = false, 
+            bool requireVisibleInMenu = true, 
             bool requirePageTemplate = true)
         {
             itemTemplate = itemTemplate ?? GetDefaultItemTemplate(helper);
-            var currentContentLink = helper.ViewContext.RequestContext.GetContentLink();
+            var currentContentLink = helper.ViewContext.HttpContext.GetContentLink();
             var contentLoader = ServiceLocator.Current.GetInstance<IContentLoader>();
-
-            Func<IEnumerable<PageData>, IEnumerable<PageData>> filter =
+            
+            Func<IEnumerable<PageData>, IEnumerable<PageData>> filter = 
                 pages => pages.FilterForDisplay(requirePageTemplate, requireVisibleInMenu);
-
+            
             var pagePath = contentLoader.GetAncestors(currentContentLink)
                 .Reverse()
                 .Select(x => x.ContentLink)
@@ -64,10 +65,10 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
             var writer = new StringWriter(buffer);
             foreach (var menuItem in menuItems)
             {
-                itemTemplate(menuItem).WriteTo(writer);
+                itemTemplate(menuItem).WriteTo(writer, HtmlEncoder.Default);
             }
 
-            return new MvcHtmlString(buffer.ToString());
+            return new HtmlString(buffer.ToString());
         }
 
         private static MenuItem CreateMenuItem(PageData page, ContentReference currentContentLink, List<ContentReference> pagePath, IContentLoader contentLoader, Func<IEnumerable<PageData>, IEnumerable<PageData>> filter)
@@ -75,16 +76,20 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
             var menuItem = new MenuItem(page)
                 {
                     Selected = page.ContentLink.CompareToIgnoreWorkID(currentContentLink) ||
-                                pagePath.Contains(page.ContentLink),
+                               pagePath.Contains(page.ContentLink),
                     HasChildren =
                         new Lazy<bool>(() => filter(contentLoader.GetChildren<PageData>(page.ContentLink)).Any())
                 };
             return menuItem;
         }
 
-        private static Func<MenuItem, HelperResult> GetDefaultItemTemplate(HtmlHelper helper)
+        private static Func<MenuItem, HelperResult> GetDefaultItemTemplate(IHtmlHelper helper)
         {
-            return x => new HelperResult(writer => writer.Write(helper.PageLink(x.Page)));
+            return x => new HelperResult(writer =>
+            {
+                helper.PageLink(x.Page).WriteTo(writer, HtmlEncoder.Default);
+                return Task.CompletedTask;
+            });
         }
 
         public class MenuItem
@@ -103,16 +108,16 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
         /// Returns a ConditionalLink object which when disposed will write a closing <![CDATA[ </a> ]]> tag
         /// to the response if the shouldWriteLink argument is true.
         /// </summary>
-        public static ConditionalLink BeginConditionalLink(this HtmlHelper helper, bool shouldWriteLink, IHtmlString url, string title = null, string cssClass = null)
+        public static ConditionalLink BeginConditionalLink(this IHtmlHelper helper, bool shouldWriteLink, string url, string title = null, string cssClass = null)
         {
             if(shouldWriteLink)
             {
                 var linkTag = new TagBuilder("a");
-                linkTag.Attributes.Add("href", url.ToHtmlString());
+                linkTag.Attributes.Add("href", url);
 
                 if(!string.IsNullOrWhiteSpace(title))
                 {
-                    linkTag.Attributes.Add("title", helper.Encode(title));
+                    linkTag.Attributes.Add("title", title);
                 }
 
                 if (!string.IsNullOrWhiteSpace(cssClass))
@@ -120,7 +125,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
                     linkTag.Attributes.Add("class", cssClass);
                 }
 
-                helper.ViewContext.Writer.Write(linkTag.ToString(TagRenderMode.StartTag));
+                linkTag.WriteTo(helper.ViewContext.Writer, HtmlEncoder.Default);
             }
             return new ConditionalLink(helper.ViewContext, shouldWriteLink);
         }
@@ -134,9 +139,9 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Helpers
         /// Overload which only executes the delegate for retrieving the URL if the link should be written.
         /// This may be used to prevent null reference exceptions by adding null checkes to the shouldWriteLink condition.
         /// </remarks>
-        public static ConditionalLink BeginConditionalLink(this HtmlHelper helper, bool shouldWriteLink, Func<IHtmlString> urlGetter, string title = null, string cssClass = null)
+        public static ConditionalLink BeginConditionalLink(this IHtmlHelper helper, bool shouldWriteLink, Func<string> urlGetter, string title = null, string cssClass = null)
         {
-            IHtmlString url = MvcHtmlString.Empty;
+            var url = string.Empty;
 
             if(shouldWriteLink)
             {

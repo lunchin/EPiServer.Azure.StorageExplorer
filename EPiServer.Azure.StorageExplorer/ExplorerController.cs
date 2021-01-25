@@ -1,31 +1,32 @@
-﻿using EPiServer.ServiceLocation;
+﻿using EPiServer.Web;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
-using System.Web.Mvc;
 
 namespace EPiServer.Azure.StorageExplorer
 {
     public class ExplorerController : Controller
     {
         private readonly IStorageService _storageService;
+        private readonly IMimeTypeResolver _mimeTypeResolver;
 
-        public ExplorerController() : this(ServiceLocator.Current.GetInstance<IStorageService>())
-        {
-
-        }
-
-        public ExplorerController(IStorageService storageService)
+        public ExplorerController(IStorageService storageService, 
+            IMimeTypeResolver mimeTypeResolver)
         {
             _storageService = storageService;
+            _mimeTypeResolver = mimeTypeResolver;
         }
 
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpGet]
-        public ActionResult Index(string container = null, string path = null, int page = 1, int pageSize = 100)
+        public async Task<IActionResult> Index(string container = null, string path = null, int page = 1, int pageSize = 100)
         {
             if (!_storageService.IsInitialized)
             {
@@ -35,9 +36,13 @@ namespace EPiServer.Azure.StorageExplorer
             var blobs = new List<AzureBlob>();
             if (container == null)
             {
+                await foreach(var blob in _storageService.GetContainersAsync())
+                {
+                    blobs.Add(blob.GetAzureBlob());
+                }
                 return View(new ExplorerModel
                 {
-                    Results = _storageService.GetContainers().Select(x => x.GetAzureBlob()).ToList(),
+                    Results = blobs,
                     Page = page,
                     PageSize = pageSize,
                     Container = container,
@@ -46,9 +51,16 @@ namespace EPiServer.Azure.StorageExplorer
                 });
             }
 
+            var containerClient = await _storageService.GetContainerAsync(container);
+            await foreach (var blob in _storageService.GetBlobItemsAsync(container, path))
+            {
+                blobs.Add(blob.GetAzureBlob(containerClient));
+            }
+
+
             return View(new ExplorerModel
             {
-                Results = _storageService.GetBlobItems(container, path, (page -1) * pageSize, pageSize).Select(x => x.GetAzureBlob()).ToList(),
+                Results = blobs,
                 Page = page,
                 PageSize = pageSize,
                 Container = container,
@@ -59,40 +71,40 @@ namespace EPiServer.Azure.StorageExplorer
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpGet]
-        public ActionResult Delete(string url, string container = null, string path = null, int page = 1, int pageSize = 100)
+        public async Task<IActionResult> Delete(string url, string container = null, string path = null, int page = 1, int pageSize = 100)
         {
-            _storageService.Delete(url);
+            await _storageService.DeleteAsync(url);
             return RedirectToAction("Index", new { path, page, container, pageSize});
         }
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpPost]
-        public ActionResult Rename(string url, string newName, string container = null, string path = null, int page = 1, int pageSize = 100)
+        public async Task<IActionResult> Rename(string url, string newName, string container = null, string path = null, int page = 1, int pageSize = 100)
         {
-            var reference = _storageService.GetCloudBlockBlob(url);
+            var reference = await _storageService.GetCloudBlockBlobAsync(url);
             if (reference == null)
             {
                 return new EmptyResult();
             }
-            _storageService.Rename(reference, newName);
+            
+            await _storageService.RenameAsync(reference, newName);
             return RedirectToAction("Index", new { path, page, container, pageSize });
         }
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpGet]
-        public ActionResult Download(string url)
+        public async Task<IActionResult> Download(string url)
         {
-            var reference = _storageService.GetCloudBlockBlob(url);
+            var reference = await _storageService.GetCloudBlockBlobAsync(url);
             if (reference == null)
             {
                 return new EmptyResult();
             }
 
-            var memStream = new byte[reference.Properties.Length];
-
-            reference.DownloadToByteArray(memStream, 0);
+            var memStream = new MemoryStream();
+            await reference.DownloadToAsync(memStream);
             string filename = reference.Name.Substring(reference.Name.LastIndexOf('/') == 0 ? 0 : reference.Name.LastIndexOf('/') + 1);
-            string contentType = MimeMapping.GetMimeMapping(url);
+            string contentType = _mimeTypeResolver.GetMimeMapping(url);
 
             var cd = new System.Net.Mime.ContentDisposition
             {
@@ -100,24 +112,24 @@ namespace EPiServer.Azure.StorageExplorer
                 Inline = true,
             };
 
-            Response.AppendHeader("Content-Disposition", cd.ToString());
+            Response.Headers.Append("Content-Disposition", cd.ToString());
 
             return File(memStream, contentType);
         }
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpPost]
-        public ActionResult UploadFiles(List<HttpPostedFileBase> postedFiles, string container, string path)
+        public async Task<IActionResult> UploadFiles(List<IFormFile> postedFiles, string container, string path)
         {
-            foreach (HttpPostedFileBase postedFile in postedFiles)
+            foreach (var postedFile in postedFiles)
             {
                 if (postedFile != null)
                 {
                     string fileName = Path.GetFileName(postedFile.FileName);
-                    byte[] bytes = new byte[postedFile.ContentLength];
-                    postedFile.InputStream.Read(bytes, 0, bytes.Length);
+                    byte[] bytes = new byte[postedFile.Length];
+                    postedFile.OpenReadStream().Read(bytes, 0, bytes.Length);
                     var ms = new MemoryStream(bytes);
-                    _storageService.Add(container, HttpUtility.HtmlDecode(path) + fileName, ms, postedFile.ContentLength);
+                    await _storageService.AddAsync(container, HttpUtility.HtmlDecode(path) + fileName, ms, postedFile.Length);
                     GC.Collect();
                 }
             }
@@ -127,9 +139,9 @@ namespace EPiServer.Azure.StorageExplorer
 
         [Authorize(Roles = "CmsAdmins")]
         [HttpPost]
-        public ActionResult CreateContainer(string container)
+        public async Task<ActionResult> CreateContainer(string container)
         {
-            _storageService.GetContainer(container.ToLower());
+            await _storageService.GetContainerAsync(container.ToLower());
             return RedirectToAction("Index");
         }
 

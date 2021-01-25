@@ -1,4 +1,4 @@
-using EPiServer.Core;
+﻿using EPiServer.Core;
 using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels

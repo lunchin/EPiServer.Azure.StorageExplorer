@@ -1,4 +1,4 @@
-namespace EPiServer.Azure.StorageExplorer.Sample.Business.Rendering
+﻿namespace EPiServer.Azure.StorageExplorer.Sample.Business.Rendering
 {
     /// <summary>
     /// Defines a property for CSS class(es) which will be added to the class

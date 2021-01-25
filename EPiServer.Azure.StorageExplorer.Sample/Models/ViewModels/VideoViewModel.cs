@@ -1,4 +1,4 @@
-
+﻿
 namespace EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels
 {
     /// <summary>

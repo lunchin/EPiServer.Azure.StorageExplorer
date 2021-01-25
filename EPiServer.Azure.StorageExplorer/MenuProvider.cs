@@ -1,5 +1,4 @@
 ﻿using EPiServer.Framework.Localization;
-using EPiServer.Security;
 using EPiServer.Shell;
 using EPiServer.Shell.Navigation;
 using System.Collections.Generic;
@@ -27,24 +26,13 @@ namespace EPiServer.Azure.StorageExplorer
             {
                 SortIndex = 15,
                 Alignment = MenuItemAlignment.Left,
-                IsAvailable = _ => HasAccessToStorageExpolrerUI
+                AuthorizationPolicy = "episerver:storage"
             };
 
-            var menus = new List<MenuItem>();
-            if (HasAccessToStorageExpolrerUI)
+            return new List<MenuItem>
             {
-                menus.Add(storageExpolrerLink);
-            }
-            return menus;
-        }
-
-        private bool HasAccessToStorageExpolrerUI
-        {
-            get
-            {
-                return PrincipalInfo.Current.Principal.IsInRole("CmsAdmins");
-
-            }
+                storageExpolrerLink
+            };
         }
     }
 }

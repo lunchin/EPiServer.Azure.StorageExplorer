@@ -1,9 +1,10 @@
-using System.Web.Mvc;
 using EPiServer.Azure.StorageExplorer.Sample.Business;
 using EPiServer.Azure.StorageExplorer.Sample.Models.Pages;
 using EPiServer.Azure.StorageExplorer.Sample.Models.ViewModels;
 using EPiServer.Web.Mvc;
 using EPiServer.Shell.Security;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace EPiServer.Azure.StorageExplorer.Sample.Controllers
 {
@@ -26,9 +27,9 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Controllers
         /// forms authentication for login functionality we add an action for logging out to all
         /// controllers inheriting from this class.
         /// </remarks>
-        public ActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            UISignInManager.Service.SignOut();
+            await UISignInManager.Service.SignOutAsync();
             return RedirectToAction("Index");
         }
 
