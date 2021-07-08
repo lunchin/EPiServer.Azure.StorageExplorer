@@ -4,7 +4,6 @@ using EPiServer.Cms.UI.AspNetIdentity;
 using EPiServer.Data;
 using EPiServer.DependencyInjection;
 using EPiServer.ServiceLocation;
-using EPiServer.Web.Internal;
 using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -52,18 +51,11 @@ namespace EPiServer.Azure.StorageExplorer.Sample
             services.AddCms();
             services.Configure<Blobs.AzureBlobProviderOptions>(x =>
             {
-                x.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=markepidemo;AccountKey=npMfkzPolmdqj9d+tqE+Tn+UqSY+yJObCk1vT8bCOGeYsrorGIIO1WY61p+TuBzIw7+xbmgFjAutGtEaS4D6+w==;EndpointSuffix=core.windows.net";
+                x.ConnectionString = "ChangeMe";
                 x.ContainerName = "mysitemedia";
             });
-            BlobServiceConfigurationProviderExtensions.AddBlobProvider<Blobs.AzureBlobProvider>(services, "azureblobprovider", true);
+            services.AddBlobProvider<Blobs.AzureBlobProvider>("azureblobprovider", true);
             services.AddStorageExplorer();
-            
-
-            services.Configure<UIOptions>(uiOptions =>
-            {
-                uiOptions.UIShowGlobalizationUserInterface = true;
-            });
-
             services.AddEmbeddedLocalization<Startup>();
         }
 

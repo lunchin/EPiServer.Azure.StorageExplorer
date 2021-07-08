@@ -11,7 +11,6 @@ namespace EPiServer.DependencyInjection
     {
         public static IServiceCollection AddStorageExplorer(this IServiceCollection services)
         {
-            services.AddCmsUI();
             services.AddSingleton<IStorageService, StorageService>();
             services.Configure<ProtectedModuleOptions>(
                 pm =>

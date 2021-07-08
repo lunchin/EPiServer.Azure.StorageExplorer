@@ -262,5 +262,5 @@ __pycache__/
 
 tmp/
 nuget/
-EPiServer.Azure.StorageExplorer.Sample/modules/_protected/EPiServer.Azure.StorageExplorer/
+EPiServer.Azure.StorageExplorer.Sample/modules/_protected/
 Build.log
