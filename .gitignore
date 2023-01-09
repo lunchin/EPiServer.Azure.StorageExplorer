@@ -261,6 +261,7 @@ __pycache__/
 *.pyc
 
 tmp/
-nuget/
+zipoutput/
+artifacts/
 EPiServer.Azure.StorageExplorer.Sample/modules/_protected/
 Build.log

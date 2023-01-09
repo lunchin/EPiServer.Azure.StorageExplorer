@@ -101,8 +101,7 @@ namespace EPiServer.Azure.StorageExplorer
                 return new EmptyResult();
             }
 
-            var memStream = new MemoryStream();
-            await reference.DownloadToAsync(memStream);
+            var file = await reference.DownloadAsync();
             string filename = reference.Name.Substring(reference.Name.LastIndexOf('/') == 0 ? 0 : reference.Name.LastIndexOf('/') + 1);
             string contentType = _mimeTypeResolver.GetMimeMapping(url);
 
@@ -114,7 +113,7 @@ namespace EPiServer.Azure.StorageExplorer
 
             Response.Headers.Append("Content-Disposition", cd.ToString());
 
-            return File(memStream, contentType);
+            return File(file.Value.Content, contentType);
         }
 
         [Authorize(Roles = "CmsAdmins")]

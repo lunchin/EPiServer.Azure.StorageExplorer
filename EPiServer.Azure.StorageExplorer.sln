@@ -1,11 +1,19 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPiServer.Azure.StorageExplorer", "EPiServer.Azure.StorageExplorer\EPiServer.Azure.StorageExplorer.csproj", "{7C4702A7-9A8C-416E-9FCE-D028DEB013BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Azure.StorageExplorer", "EPiServer.Azure.StorageExplorer\EPiServer.Azure.StorageExplorer.csproj", "{7C4702A7-9A8C-416E-9FCE-D028DEB013BA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EPiServer.Azure.StorageExplorer.Sample", "EPiServer.Azure.StorageExplorer.Sample\EPiServer.Azure.StorageExplorer.Sample.csproj", "{A8230430-6973-41B4-A64B-475D76D5156C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EPiServer.Azure.StorageExplorer.Sample", "EPiServer.Azure.StorageExplorer.Sample\EPiServer.Azure.StorageExplorer.Sample.csproj", "{A8230430-6973-41B4-A64B-475D76D5156C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{61C3614E-A485-4710-B5FE-2F35AFA88038}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+		build\nuspec.props = build\nuspec.props
+		build\pack.ps1 = build\pack.ps1
+		build\version.props = build\version.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

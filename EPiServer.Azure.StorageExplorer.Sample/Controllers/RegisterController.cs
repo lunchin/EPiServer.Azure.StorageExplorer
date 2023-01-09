@@ -45,7 +45,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Controllers
 
                     AdministratorRegistrationPageMiddleware.IsEnabled = false;
                     SetFullAccessToWebAdmin();
-                    var resFromSignIn = await UISignInManager.SignInAsync(UIUserProvider.Name, model.Username, model.Password);
+                    var resFromSignIn = await UISignInManager.SignInAsync(model.Username, model.Password);
                     if (resFromSignIn)
                     {
                         return Redirect("/");

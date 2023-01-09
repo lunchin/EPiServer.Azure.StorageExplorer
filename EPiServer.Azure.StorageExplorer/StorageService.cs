@@ -145,7 +145,10 @@ namespace EPiServer.Azure.StorageExplorer
 
         public async Task<BlobClient> GetCloudBlockBlobAsync(string url)
         {
-            return await Task.FromResult(new BlobClient(new Uri(url)));
+            var blobClient = new BlobClient(new Uri(url));
+            var containerName = blobClient.BlobContainerName;
+            var blobName = blobClient.Name;
+            return await Task.FromResult(new BlobClient(_azureBlobProviderOptions.ConnectionString, containerName, blobName));
         }
 
     }

@@ -22,7 +22,7 @@ namespace EPiServer.Azure.StorageExplorer.Sample.Components
         /// The index action for the image file. Creates the view model and renders the view.
         /// </summary>
         /// <param name="currentContent">The current image file.</param>
-        public override IViewComponentResult Invoke(ImageFile currentContent)
+        protected override IViewComponentResult InvokeComponent(ImageFile currentContent)
         {
             var model = new ImageViewModel
             {
