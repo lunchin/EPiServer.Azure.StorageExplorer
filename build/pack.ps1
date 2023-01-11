@@ -1,4 +1,3 @@
-param ([string]$configuration = "Release")
 $ErrorActionPreference = "Stop"
 
 # Set location to the Solution directory
@@ -20,8 +19,9 @@ $azureNextMajorVersion = ($azureMajor.ToString() + ".0.0")
 $nonFactorsNode = $versionFile.SelectSingleNode("Project/ItemGroup/PackageReference[@Include='NonFactors.Grid.Core.Mvc6']")
 $nonFactorsVersion = $nonFactorsNode.Attributes["Version"].Value
 
+$versionSuffix = $Env:isProduction -eq 'true' ? '' : '-pre-' + $Env:buildNumber
 [xml] $versionFile = Get-Content "./build/version.props"
-$version = $versionFile.SelectSingleNode("Project/PropertyGroup/VersionPrefix").InnerText + $Env:versionSuffix 
+$version = $versionFile.SelectSingleNode("Project/PropertyGroup/VersionPrefix").InnerText + $versionSuffix 
 
 
 Remove-Item -Path ./zipoutput -Recurse -Force -Confirm:$false -ErrorAction Ignore
@@ -43,6 +43,6 @@ $compress = @{
 }
 
 Compress-Archive @compress
-dotnet pack --no-restore --no-build -c $configuration /p:PackageVersion=$version /p:UiVersion=$uiVersion /p:UiNextMajorVersion=$uiNextMajorVersion /p:AzureVersion=$azureVersion /p:AzureNextMajorVersion=$azureNextMajorVersion /p:NonFactorsVersion=$nonFactorsVersion EPiServer.Azure.StorageExplorer.sln
+dotnet pack --no-restore --no-build -c Release /p:PackageVersion=$version /p:UiVersion=$uiVersion /p:UiNextMajorVersion=$uiNextMajorVersion /p:AzureVersion=$azureVersion /p:AzureNextMajorVersion=$azureNextMajorVersion /p:NonFactorsVersion=$nonFactorsVersion EPiServer.Azure.StorageExplorer.sln
 
 Pop-Location

@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       buildConfiguration: release
-      versionSuffix:  ${{ fromJSON('["-pre-${{github.RUN_NUMBER}}", ""]')[github.ref == 'refs/heads/main'] }}
+      buildNumber: ${{ github.RUN_NUMBER }}
+      isProduction: ${{ github.ref == 'refs/heads/main' }}  
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
